@@ -91,15 +91,17 @@ class Client {
   /**
    * call Twitter Api
    */
-  api = async <T>(method: Method, endpoint: string, params: any = {}): Promise<T> => {
+  api = async <T>(method: Method, endpoint: string, params: any = {}, isV2 = false): Promise<T> => {
+    const v2 = "https://api.twitter.com/2";
+
     const apiEndpoint = endpoint.slice(0, 1) !== '/' ? `/${endpoint}` : endpoint;
 
     this.TokenRequestHeaderParams = Util.createTokenRequestHeaderParams(this.ConsumerKey, { token: this.Token, params });
-    this.TokenRequestHeaderParams = Util.createSignature(this.TokenRequestHeaderParams, method, apiURL + apiEndpoint, this.ConsumerSecret, this.TokenSecret);
+    this.TokenRequestHeaderParams = Util.createSignature(this.TokenRequestHeaderParams, method, (isV2 ? v2 : apiURL) + apiEndpoint, this.ConsumerSecret, this.TokenSecret);
 
     const result = await Request<T>(
       method,
-      apiURL + (params ? `${apiEndpoint}?${Util.encodeParamsToString(params)}` : apiEndpoint),
+      (isV2 ? v2 : apiURL) + (params ? `${apiEndpoint}?${Util.encodeParamsToString(params)}` : apiEndpoint),
       this.TokenRequestHeaderParams,
     );
 
